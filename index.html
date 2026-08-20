@@ -1,0 +1,735 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>PowerBook - Manutenção Concluída</title>
+    <style>
+        :root {
+            --primary: #1877f2;
+            --success: #42b72a;
+            --danger: #fa3e3e;
+            --warning: #f7b928;
+            --bg: #f0f2f5;
+            --card: #ffffff;
+            --text: #050505;
+            --subtext: #65676b;
+            --error: #ff4d4d;
+            --task: #00c853;
+        }
+
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background: var(--bg);
+            margin: 0;
+            padding: 0;
+            color: var(--text);
+            padding-bottom: 40px;
+        }
+
+        .header {
+            background: var(--card);
+            padding: 16px;
+            text-align: center;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--primary);
+            margin: 0;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 16px;
+        }
+
+        .card {
+            background: var(--card);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 16px;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+        }
+
+        h2 {
+            font-size: 1.1rem;
+            margin: 0 0 16px 0;
+            text-transform: uppercase;
+            color: var(--subtext);
+            letter-spacing: 0.5px;
+            border-bottom: 1px solid #e4e6eb;
+            padding-bottom: 8px;
+        }
+
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+            color: var(--subtext);
+            text-transform: uppercase;
+        }
+
+        select, input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            margin-bottom: 16px;
+            background: #fff;
+        }
+
+        select:focus, input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(24, 119, 242, 0.1);
+        }
+
+        .btn {
+            width: 100%;
+            padding: 16px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: transform 0.1s, opacity 0.2s;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            color: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .btn:active { transform: scale(0.98); }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; }
+
+        .btn-primary { background: var(--primary); }
+        .btn-danger { background: var(--danger); }
+        .btn-success { background: var(--success); }
+        .btn-warning { background: var(--warning); color: #000; }
+        .btn-mach { background: var(--primary); border: 1px solid var(--primary); box-shadow: none; }
+        .btn-task { background: var(--task); }
+        .btn-maint { background: #009688; border: 1px solid #00796b; box-shadow: none; }
+
+        .status-box {
+            padding: 12px;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: bold;
+            margin-bottom: 16px;
+            display: none;
+            border: 1px solid transparent;
+        }
+        .status-lunch { background: #fff3cd; color: #856404; border-color: #ffeeba; display: block; }
+        .status-active { background: #d4edda; color: #155724; border-color: #c3e6cb; display: block; }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+        .stat-item {
+            background: #f0f2f5;
+            padding: 12px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        .stat-val { font-size: 1.5rem; font-weight: 800; color: var(--primary); }
+        .stat-label { font-size: 0.75rem; text-transform: uppercase; color: var(--subtext); }
+
+        .feed {
+            max-height: 500px;
+            overflow-y: auto;
+        }
+        .feed-item {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 16px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid #f0f2f5;
+        }
+        .avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #ddd;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: #555;
+            flex-shrink: 0;
+        }
+        .feed-content h4 { margin: 0 0 4px 0; font-size: 0.95rem; }
+        .feed-content p { margin: 0; font-size: 0.9rem; }
+        .feed-time { 
+            font-size: 0.75rem; 
+            color: var(--subtext); 
+            margin-top: 4px; 
+            font-weight: 600;
+        }
+        .badge {
+            font-size: 0.6rem;
+            padding: 2px 6px;
+            border-radius: 4px;
+            color: white;
+            margin-left: 6px;
+            text-transform: uppercase;
+        }
+        .bg-in { background: var(--success); }
+        .bg-out { background: var(--danger); }
+        .bg-lunch { background: var(--warning); color: #000; }
+        .bg-mach { background: var(--primary); }
+        .bg-task { background: var(--task); }
+        .bg-error { background: var(--error); }
+        .bg-done { background: #888; }
+        .bg-maint { background: #009688; }
+
+        /* Maintenance Warning Banner */
+        .maint-warning {
+            background: #fff5f5;
+            border: 2px solid var(--danger);
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 16px;
+            display: none;
+            animation: shake 0.5s;
+        }
+        @keyframes shake {
+            0% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            50% { transform: translateX(5px); }
+            75% { transform: translateX(-5px); }
+            100% { transform: translateX(0); }
+        }
+        .maint-title {
+            color: var(--danger);
+            font-weight: 800;
+            font-size: 0.9rem;
+            margin-bottom: 4px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .maint-desc {
+            font-size: 0.85rem;
+            color: #333;
+            margin-bottom: 12px;
+        }
+
+        .hidden { display: none; }
+        
+        .toast {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: var(--error);
+            color: white;
+            padding: 16px 24px;
+            border-radius: 8px;
+            font-weight: bold;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            z-index: 1000;
+            display: none;
+            text-align: center;
+            width: 80%;
+            max-width: 300px;
+            animation: fadeIn 0.2s;
+        }
+        @keyframes fadeIn { from {opacity: 0;} to {opacity: 1;} }
+
+        /* Task Input */
+        .task-input-group {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+        .task-input-group input {
+            margin-bottom: 0;
+        }
+        .task-input-group button {
+            width: auto;
+            padding: 12px 16px;
+            margin-bottom: 0;
+            white-space: nowrap;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1 class="logo">PowerBook</h1>
+    </div>
+
+    <div class="container">
+        
+        <!-- User Selection -->
+        <div class="card">
+            <h2>1. Identificação</h2>
+            <label>Selecione o Funcionário</label>
+            <select id="userSelect">
+                <option value="" disabled selected>-- Escolha um Usuário --</option>
+                <option value="PEDRO TAVARES">PEDRO TAVARES</option>
+                <option value="LUIS SOUSA">LUIS SOUSA</option>
+                <option value="CLAUDIO MIRANDA">CLAUDIO MIRANDA</option>
+            </select>
+
+            <!-- Status Banner -->
+            <div id="statusDisplay" class="status-box"></div>
+
+            <!-- Action Buttons -->
+            <div id="controls" class="hidden">
+                <button id="btnIn" class="btn btn-primary" onclick="doCheckIn()">
+                    👍 ENTRAR (CHECK-IN)
+                </button>
+                
+                <!-- Lunch Buttons (Hidden by default) -->
+                <div id="lunchControls" class="hidden">
+                    <button id="btnLunchStart" class="btn btn-warning" onclick="toggleLunchStart()">
+                        🍽️ ALMOÇO (INÍCIO)
+                    </button>
+                    <button id="btnLunchEnd" class="btn btn-primary hidden" onclick="toggleLunchEnd()">
+                        🔄 VOLTA DO ALMOÇO
+                    </button>
+                </div>
+
+                <button id="btnOut" class="btn btn-danger" onclick="doCheckOut()">
+                    👋 SAIR (FINALIZAR)
+                </button>
+            </div>
+        </div>
+
+        <!-- Stats -->
+        <div class="card">
+            <h2>Status RH</h2>
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <div class="stat-val" id="statIn">0</div>
+                    <div class="stat-label">Em Serviço</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-val" id="statTotal">0</div>
+                    <div class="stat-label">Total Hoje</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tasks -->
+        <div class="card">
+            <h2>Tarefas Rápidas</h2>
+            <label>Adicionar Tarefa</label>
+            <div class="task-input-group">
+                <input type="text" id="taskInput" placeholder="Ex: Verificar óleo, Abastecer...">
+                <button class="btn btn-task" onclick="addTask()">+ ADD</button>
+            </div>
+            <div style="font-size: 0.8rem; color: var(--subtext);">
+                *Tarefas aparecem no feed e podem ser marcadas como concluídas.
+            </div>
+        </div>
+
+        <!-- Machine -->
+        <div class="card">
+            <h2>Horas de Operação</h2>
+            
+            <!-- Maintenance Warning Banner -->
+            <div id="maintBanner" class="maint-warning">
+                <div class="maint-title">⚠️ MANUTENÇÃO REQUERIDA</div>
+                <div class="maint-desc">
+                    A máquina <strong id="maintMachineName"></strong> atingiu <strong id="maintHours"></strong> horas de operação.
+                    <br>Por favor, realize a manutenção.
+                </div>
+                <button class="btn btn-maint" id="btnCompleteMaint" onclick="completeMaintenance()">
+                    ✅ MANUTENÇÃO CONCLUÍDA
+                </button>
+            </div>
+
+            <label>Máquina</label>
+            <select id="machineSelect">
+                <option value="GEHL">GEHL</option>
+                <option value="MUSTANG">MUSTANG</option>
+                <option value="BOBCAT">BOBCAT</option>
+            </select>
+            <label>Leitura de Horas (H)</label>
+            <input type="number" id="hourInput" placeholder="DIGITE AS HORAS">
+            <div id="lastReadingDisplay" style="font-size: 0.8rem; color: var(--subtext); margin-bottom: 12px;"></div>
+            
+            <button class="btn btn-success" id="btnLogRead" onclick="doOdometer()">REGISTRAR HORAS</button>
+            <hr style="margin: 20px 0; border: 0; border-top: 1px solid #eee;">
+            
+            <label style="color: var(--danger);">MÁQUINA: CHECK-OUT</label>
+            <input type="number" id="machineOutInput" placeholder="HORAS FINAIS (H)">
+            <button class="btn btn-mach" id="btnMachOut" onclick="doMachineCheckout()">FINALIZAR MÁQUINA</button>
+        </div>
+
+        <!-- Feed -->
+        <div class="card">
+            <h2>Feed de Atividades</h2>
+            <div id="feedList" class="feed">
+                <div class="feed-item">
+                    <div class="avatar" style="background:var(--primary); color:white;">S</div>
+                    <div class="feed-content">
+                        <h4>SISTEMA <span class="badge bg-mach">INFO</span></h4>
+                        <p>Sistema pronto. Seleção de usuário necessária.</p>
+                        <div class="feed-time" id="feedTime">AGORA</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <div id="toast" class="toast">ERRO: Leitura inválida!</div>
+
+    <script>
+        // State
+        let user = null;
+        let isOnShift = false;
+        let isOnLunch = false;
+        let shiftStart = null;
+        let lunchStart = null;
+        let totalLunchMs = 0;
+        let logLines = [];
+        let activeMachines = 0;
+        let machineCheckoutDone = false;
+        let taskCounter = 0;
+
+        // Machine History Store
+        // 'reading' = last recorded hour meter value
+        // 'totalHours' = cumulative hours tracked for maintenance logic
+        // 'lastMaint' = Date object of last maintenance
+        const machineHistory = {
+            "GEHL": { reading: 0, totalHours: 0, lastMaint: null },
+            "MUSTANG": { reading: 0, totalHours: 0, lastMaint: null },
+            "BOBCAT": { reading: 0, totalHours: 0, lastMaint: null }
+        };
+
+        // Elements
+        const userSelect = document.getElementById('userSelect');
+        const controls = document.getElementById('controls');
+        const statusDisplay = document.getElementById('statusDisplay');
+        const lunchControls = document.getElementById('lunchControls');
+        const btnIn = document.getElementById('btnIn');
+        const btnLunchStart = document.getElementById('btnLunchStart');
+        const btnLunchEnd = document.getElementById('btnLunchEnd');
+        const btnOut = document.getElementById('btnOut');
+        const feedList = document.getElementById('feedList');
+        const feedTime = document.getElementById('feedTime');
+        const machineSelect = document.getElementById('machineSelect');
+        const hourInput = document.getElementById('hourInput');
+        const machineOutInput = document.getElementById('machineOutInput');
+        const lastReadingDisplay = document.getElementById('lastReadingDisplay');
+        const btnLogRead = document.getElementById('btnLogRead');
+        const btnMachOut = document.getElementById('btnMachOut');
+        const toast = document.getElementById('toast');
+        const maintBanner = document.getElementById('maintBanner');
+        const maintMachineName = document.getElementById('maintMachineName');
+        const maintHours = document.getElementById('maintHours');
+        const btnCompleteMaint = document.getElementById('btnCompleteMaint');
+
+        // Time Helpers
+        const now = () => new Date();
+        const timeStr = (d) => d.toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'});
+        const dateStr = (d) => d.toLocaleDateString('pt-BR') + ' ' + timeStr(d);
+
+        // Update UI when machine changes
+        machineSelect.addEventListener('change', updateLastReadingUI);
+        function updateLastReadingUI() {
+            const machId = machineSelect.value;
+            const data = machineHistory[machId];
+            const lastVal = data.reading;
+            const totalHours = data.totalHours;
+            
+            // Format Last Maintenance
+            let maintText = "Nunca";
+            if (data.lastMaint) {
+                maintText = dateStr(data.lastMaint);
+            }
+
+            lastReadingDisplay.innerText = `Última leitura: ${lastVal} H | Total Horas: ${totalHours}h | Última Manutenção: ${maintText}`;
+            
+            // Check for Maintenance Warning
+            // Trigger only if totalHours >= 200 AND it's a multiple of 200 (200, 400, 600...)
+            if (totalHours >= 200 && (totalHours % 200 === 0)) {
+                maintMachineName.innerText = machId;
+                maintHours.innerText = totalHours;
+                maintBanner.style.display = 'block';
+            } else {
+                maintBanner.style.display = 'none';
+            }
+
+            // Reset inputs
+            hourInput.value = '';
+            machineOutInput.value = '';
+        }
+
+        // Initialize
+        userSelect.addEventListener('change', (e) => {
+            user = e.target.value;
+            if(user) {
+                controls.classList.remove('hidden');
+                // Reset state
+                isOnShift = false;
+                isOnLunch = false;
+                shiftStart = null;
+                totalLunchMs = 0;
+                machineCheckoutDone = false;
+                lunchControls.classList.add('hidden');
+                statusDisplay.style.display = 'none';
+                btnIn.disabled = false;
+                btnOut.disabled = false;
+                addLog('SISTEMA', 'INFO', `Usuário ${user} selecionado.`);
+                updateLastReadingUI();
+            } else {
+                controls.classList.add('hidden');
+                user = null;
+            }
+        });
+
+        function addLog(name, type, msg) {
+            const d = now();
+            let badgeClass = 'bg-mach';
+            if(type === 'IN') badgeClass = 'bg-in';
+            if(type === 'OUT') badgeClass = 'bg-out';
+            if(type === 'LUNCH') badgeClass = 'bg-lunch';
+            if(type === 'MACH') badgeClass = 'bg-mach';
+            if(type === 'TASK') badgeClass = 'bg-task';
+            if(type === 'MAINT') badgeClass = 'bg-maint';
+
+            const html = `
+                <div class="feed-item">
+                    <div class="avatar" style="background:${type==='LUNCH'?'var(--warning)':'#ddd'}; color:${type==='LUNCH'?'#000':'#555'}">${name.charAt(0)}</div>
+                    <div class="feed-content">
+                        <h4>${name} <span class="badge ${badgeClass}">${type}</span></h4>
+                        <p>${msg}</p>
+                        <div class="feed-time">${dateStr(d)} - ${timeStr(d)}</div>
+                    </div>
+                </div>
+            `;
+            feedList.insertAdjacentHTML('afterbegin', html);
+            logLines.push(`[${dateStr(d)}] ${name} - ${type}: ${msg}`);
+            feedTime.innerText = dateStr(d) + ' ' + timeStr(d);
+        }
+
+        function doCheckIn() {
+            if(!user) return;
+            isOnShift = true;
+            shiftStart = now();
+            totalLunchMs = 0;
+            
+            btnIn.disabled = true;
+            lunchControls.classList.remove('hidden');
+            statusDisplay.innerText = "EM TURNO";
+            statusDisplay.className = "status-box status-active";
+            
+            addLog(user, 'IN', 'Iniciou o turno.');
+        }
+
+        function toggleLunchStart() {
+            if(!isOnShift) return;
+            
+            isOnLunch = true;
+            lunchStart = now();
+            
+            btnLunchStart.classList.add('hidden');
+            btnLunchEnd.classList.remove('hidden');
+            
+            statusDisplay.innerText = "EM PAUSA: ALMOÇO";
+            statusDisplay.className = "status-box status-lunch";
+            
+            addLog(user, 'LUNCH', 'Iniciou pausa para almoço.');
+        }
+
+        function toggleLunchEnd() {
+            if(!isOnLunch) return;
+            
+            const end = now();
+            const duration = end - lunchStart;
+            totalLunchMs += duration;
+            
+            isOnLunch = false;
+            
+            btnLunchStart.classList.remove('hidden');
+            btnLunchEnd.classList.add('hidden');
+            
+            statusDisplay.style.display = 'none';
+            
+            const minutes = Math.round(duration / 60000);
+            addLog(user, 'LUNCH', `Volta de almoço (${minutes} min).`);
+        }
+
+        function doOdometer() {
+            const machId = machineSelect.value;
+            const val = parseFloat(hourInput.value);
+            const lastVal = machineHistory[machId].reading;
+
+            if (isNaN(val)) {
+                showToast("ERRO: Digite um valor numérico.");
+                return;
+            }
+
+            if (val < lastVal) {
+                showToast(`ERRO: Leitura (${val}) menor que a última (${lastVal}).`);
+                return;
+            }
+
+            const diff = val - lastVal;
+            machineHistory[machId].reading = val;
+            machineHistory[machId].totalHours += diff;
+            
+            activeMachines++;
+            addLog("SISTEMA", 'MACH', `${machId} registrada: ${val} H (Total: ${diff} H).`);
+            hourInput.value = '';
+            updateLastReadingUI();
+        }
+
+        function doMachineCheckout() {
+            const machId = machineSelect.value;
+            const finalVal = parseFloat(machineOutInput.value);
+            const lastVal = machineHistory[machId].reading;
+
+            if (isNaN(finalVal)) {
+                showToast("ERRO: Digite a leitura final da máquina.");
+                return;
+            }
+
+            if (finalVal < lastVal) {
+                showToast(`ERRO: Leitura final (${finalVal}) menor que a última registrada (${lastVal}).`);
+                return;
+            }
+
+            const diff = finalVal - lastVal;
+            machineCheckoutDone = true;
+            
+            addLog("SISTEMA", 'MACH', `${machId} CHECK-OUT: Final ${finalVal} H (Total: ${diff} H).`);
+            
+            machineOutInput.value = '';
+            btnMachOut.disabled = true;
+            btnMachOut.innerText = "MÁQUINA FINALIZADA";
+            showToast("Máquina finalizada com sucesso!");
+        }
+
+        function doCheckOut() {
+            if (!user || !isOnShift) return;
+            
+            const shiftEnd = now();
+            const totalShiftMs = shiftEnd - shiftStart;
+            const totalMinutes = Math.round(totalShiftMs / 60000);
+            const hours = Math.floor(totalMinutes / 60);
+            const mins = totalMinutes % 60;
+            
+            const workMinutes = totalMinutes - Math.round(totalLunchMs / 60000);
+
+            let warning = "";
+            if (!machineCheckoutDone) {
+                warning = " (Atenção: Máquina não finalizada)";
+                addLog("SISTEMA", 'MACH', `ADVERTÊNCIA: ${user} saiu sem finalizar a máquina.`);
+            }
+
+            addLog(user, 'OUT', `Finalizou turno (${hours}h ${mins}m). Trabalho: ${workMinutes} min.${warning}`);
+            
+            // Reset UI
+            isOnShift = false;
+            btnIn.disabled = false;
+            btnOut.innerText = "SAIR (FINALIZAR TURNO)";
+            lunchControls.classList.add('hidden');
+            statusDisplay.style.display = 'none';
+            btnLunchStart.classList.remove('hidden');
+            btnLunchEnd.classList.add('hidden');
+            
+            // Reset Machine State for next user
+            machineCheckoutDone = false;
+            btnMachOut.disabled = false;
+            btnMachOut.innerText = "FINALIZAR MÁQUINA";
+            
+            updateStats();
+        }
+
+        function updateStats() {
+            document.getElementById('statIn').innerText = isOnShift ? 1 : 0;
+            document.getElementById('statTotal').innerText = isOnShift ? 1 : 0;
+            activeMachines = 0;
+        }
+
+        function showToast(msg) {
+            toast.innerText = msg;
+            toast.style.display = 'block';
+            setTimeout(() => {
+                toast.style.display = 'none';
+            }, 3000);
+        }
+
+        function addTask() {
+            const input = document.getElementById('taskInput');
+            const taskName = input.value.trim();
+            
+            if (!taskName || !user) {
+                showToast("Digite uma tarefa e selecione um usuário.");
+                return;
+            }
+
+            const taskId = `task-${Date.now()}`;
+            const html = `
+                <div class="feed-item">
+                    <div class="avatar" style="background:var(--task); color:white;">T</div>
+                    <div class="feed-content">
+                        <h4>${user} <span class="badge bg-task">TAREFA</span></h4>
+                        <p>${taskName}</p>
+                        <div class="feed-time">${dateStr(now())} - ${timeStr(now())}</div>
+                        <button class="btn btn-success" style="margin-top:8px; width:auto; padding:8px 12px; font-size:0.8rem; border-radius:4px;" onclick="completeTask('${taskId}', this)">✔ CONCLUÍDO</button>
+                    </div>
+                </div>
+            `;
+            
+            feedList.insertAdjacentHTML('afterbegin', html);
+            logLines.push(`[${dateStr(now())}] ${user} - TAREFA: ${taskName}`);
+            input.value = '';
+        }
+
+        function completeTask(id, btn) {
+            const item = btn.closest('.feed-item');
+            const title = item.querySelector('h4');
+            const p = item.querySelector('p');
+            const taskName = p.innerText;
+            
+            title.innerHTML = `${title.innerHTML.replace(/✔ CONCLUÍDO/, '')} <span class="badge bg-done">FECHADO</span>`;
+            p.style.textDecoration = "line-through";
+            p.style.color = "#888";
+            btn.style.display = "none";
+            
+            addLog("SISTEMA", "TASK", `Tarefa "${taskName}" concluída.`);
+        }
+
+        function completeMaintenance() {
+            const machId = machineSelect.value;
+            
+            // Reset hours
+            machineHistory[machId].totalHours = 0;
+            machineHistory[machId].lastMaint = now();
+            
+            // Log
+            addLog("SISTEMA", 'MAINT', `Manutenção concluída. Novo ciclo iniciado para ${machId}.`);
+            
+            // Hide banner and update UI
+            maintBanner.style.display = 'none';
+            updateLastReadingUI();
+        }
+    </script>
+</body>
+</html>
