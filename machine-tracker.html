@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Machine Usage Tracker</title>
+    <title>Rastreador de Uso de Máquinas</title>
     <style>
         * {
             margin: 0;
@@ -48,6 +48,16 @@
             font-weight: 600;
             background: #d4edda;
             color: #155724;
+        }
+        
+        .admin-badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.75em;
+            font-weight: 700;
+            background: #ffc107;
+            color: #000;
+            margin-left: 10px;
         }
         
         .session-info {
@@ -139,13 +149,18 @@
             background: #764ba2;
         }
         
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        
         button.secondary {
             background: #6c757d;
             padding: 8px 15px;
             font-size: 0.9em;
         }
         
-        button.secondary:hover {
+        button.secondary:hover:not(:disabled) {
             background: #5a6268;
         }
         
@@ -153,7 +168,7 @@
             background: #dc3545;
         }
         
-        button.danger:hover {
+        button.danger:hover:not(:disabled) {
             background: #c82333;
         }
         
@@ -163,6 +178,15 @@
         
         button.success:hover {
             background: #218838;
+        }
+        
+        button.warning {
+            background: #ffc107;
+            color: #000;
+        }
+        
+        button.warning:hover:not(:disabled) {
+            background: #e0a800;
         }
         
         .stats-grid {
@@ -240,6 +264,28 @@
             flex-wrap: wrap;
         }
         
+        .admin-section {
+            background: #fff3cd;
+            border: 2px solid #ffc107;
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+        
+        .admin-section h3 {
+            color: #856404;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .admin-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
         .success-message {
             background: #d4edda;
             color: #155724;
@@ -255,6 +301,10 @@
             padding: 15px;
             border-radius: 5px;
             margin-bottom: 20px;
+            display: none;
+        }
+        
+        .hidden-actions {
             display: none;
         }
         
@@ -283,110 +333,124 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>🏗️ Machine Usage Tracker</h1>
-            <span class="status-badge" id="statusBadge">✓ Ready</span>
+            <div>
+                <h1>🏗️ Rastreador de Uso de Máquinas</h1>
+                <span class="admin-badge" id="adminBadge" style="display: none;">👤 ADMINISTRADOR</span>
+            </div>
+            <span class="status-badge" id="statusBadge">✓ Pronto</span>
         </div>
         
         <div class="success-message" id="successMessage"></div>
         <div class="error-message" id="errorMessage"></div>
         
-        <!-- Session Info -->
+        <!-- Informações da Sessão -->
         <div class="session-info">
             <div>
-                <span class="session-label">👤 Current User</span>
-                <span class="session-value" id="currentUser">Not selected</span>
+                <span class="session-label">👤 Usuário Atual</span>
+                <span class="session-value" id="currentUser">Não selecionado</span>
             </div>
             <div>
-                <span class="session-label">📅 Session Started</span>
+                <span class="session-label">📅 Sessão Iniciada</span>
                 <span class="session-value" id="sessionStart">--:--</span>
             </div>
             <div>
-                <span class="session-label">⏱️ Session Duration</span>
+                <span class="session-label">⏱️ Duração da Sessão</span>
                 <span class="session-value" id="sessionDuration">00:00:00</span>
             </div>
             <div class="session-controls">
-                <button class="success" onclick="app.startNewSession()">🔄 New Session</button>
-                <button class="danger" onclick="app.endSession()">🛑 End & Export</button>
+                <button class="success" onclick="app.startNewSession()">🔄 Nova Sessão</button>
+                <button class="danger" onclick="app.endSession()">🛑 Finalizar & Exportar</button>
             </div>
         </div>
         
-        <!-- Log Usage Section -->
+        <!-- Seção Registrar Uso -->
         <div class="section">
-            <h2>Log Machine Usage</h2>
+            <h2>Registrar Uso de Máquina</h2>
             <div class="form-group">
                 <div>
-                    <label for="machine">Machine</label>
+                    <label for="machine">Máquina</label>
                     <select id="machine" required>
-                        <option value="">Select Machine...</option>
+                        <option value="">Selecione a Máquina...</option>
                     </select>
                 </div>
                 <div>
-                    <label for="user">User</label>
+                    <label for="user">Usuário</label>
                     <select id="user" required>
-                        <option value="">Select User...</option>
+                        <option value="">Selecione o Usuário...</option>
                     </select>
                 </div>
                 <div>
-                    <label for="hours">Hours Used</label>
+                    <label for="hours">Horas Usadas</label>
                     <input type="number" id="hours" placeholder="0.0" step="0.1" min="0" required>
                 </div>
-                <button onclick="app.logUsage()">Log Usage</button>
+                <button onclick="app.logUsage()">Registrar Uso</button>
             </div>
         </div>
         
-        <!-- Machine Status Section -->
+        <!-- Seção Status das Máquinas -->
         <div class="section">
-            <h2>Machine Status</h2>
+            <h2>Status das Máquinas</h2>
             <div class="stats-grid" id="machineStats"></div>
         </div>
         
-        <!-- Machines Summary Table -->
+        <!-- Tabela Resumo de Máquinas -->
         <div class="section">
-            <h2>Machines Summary</h2>
+            <h2>Resumo das Máquinas</h2>
             <table id="machinesTable">
                 <thead>
                     <tr>
-                        <th>Machine</th>
-                        <th>Total Hours</th>
+                        <th>Máquina</th>
+                        <th>Total de Horas</th>
                         <th>Status</th>
-                        <th>Last Maintenance</th>
-                        <th>Action</th>
+                        <th>Última Manutenção</th>
+                        <th>Ação</th>
                     </tr>
                 </thead>
                 <tbody></tbody>
             </table>
         </div>
         
-        <!-- Usage Logs Section -->
+        <!-- Seção Registros de Uso -->
         <div class="section">
-            <h2>Usage Logs (Current Session)</h2>
+            <h2>Registros de Uso (Sessão Atual)</h2>
             <table id="usageTable">
                 <thead>
                     <tr>
-                        <th>Machine</th>
-                        <th>User</th>
-                        <th>Hours</th>
-                        <th>Date & Time</th>
+                        <th>Máquina</th>
+                        <th>Usuário</th>
+                        <th>Horas</th>
+                        <th>Data & Hora</th>
                     </tr>
                 </thead>
                 <tbody></tbody>
             </table>
         </div>
         
-        <!-- Export Section -->
+        <!-- Seção de Exportação -->
         <div class="section">
-            <h2>Export Data</h2>
+            <h2>Exportar Dados</h2>
             <div class="export-buttons">
-                <button class="secondary" onclick="app.exportCSV()">📥 Export CSV</button>
-                <button class="secondary" onclick="app.exportXML()">📥 Export XML</button>
-                <button class="secondary danger" onclick="app.clearAllData()">🗑️ Clear All</button>
+                <button class="secondary" onclick="app.exportCSV()">📥 Exportar CSV</button>
+                <button class="secondary" onclick="app.exportXML()">📥 Exportar XML</button>
+            </div>
+        </div>
+        
+        <!-- Seção Admin -->
+        <div class="section" id="adminSection" style="display: none;">
+            <div class="admin-section">
+                <h3>⚙️ Painel de Administração</h3>
+                <p style="margin-bottom: 15px; color: #856404;">Apenas o administrador (Claudio Miranda) pode resetar alertas de manutenção.</p>
+                <div class="admin-buttons">
+                    <button class="warning" onclick="app.resetAllMaintenance()">🔄 Resetar Todas as Manutenções</button>
+                    <button class="danger" onclick="app.clearAllData()">🗑️ Limpar Todos os Dados</button>
+                </div>
             </div>
         </div>
     </div>
     
     <script src="config.js"></script>
     <script>
-        // Machine Usage Tracker App
+        // Aplicativo Rastreador de Uso de Máquinas
         const app = {
             machines: [],
             users: [],
@@ -397,7 +461,7 @@
             sessionDurationInterval: null,
             
             async init() {
-                console.log('Initializing Machine Usage Tracker...');
+                console.log('Inicializando Rastreador de Uso de Máquinas...');
                 this.initializeData();
                 this.loadFromLocalStorage();
                 this.startNewSession();
@@ -407,7 +471,7 @@
             },
             
             initializeData() {
-                // Initialize machines
+                // Inicializar máquinas
                 if (this.machines.length === 0) {
                     this.machines = CONFIG.MACHINES.map((name, index) => ({
                         id: index + 1,
@@ -418,7 +482,7 @@
                     }));
                 }
                 
-                // Initialize users
+                // Inicializar usuários
                 if (this.users.length === 0) {
                     this.users = CONFIG.USERS.map((name, index) => ({
                         id: index + 1,
@@ -430,7 +494,7 @@
             startNewSession() {
                 const user = document.getElementById('user').value;
                 if (!user) {
-                    this.showError('Please select a user first');
+                    this.showError('Por favor, selecione um usuário primeiro');
                     return;
                 }
                 
@@ -447,9 +511,25 @@
                 document.getElementById('currentUser').textContent = selectedUser.name;
                 document.getElementById('sessionStart').textContent = this.getCurrentDateTime();
                 
+                // Mostrar painel admin se for Claudio Miranda
+                this.updateAdminPanel();
+                
                 this.saveToLocalStorage();
-                this.showSuccess(`✓ Session started for ${selectedUser.name}`);
+                this.showSuccess(`✓ Sessão iniciada para ${selectedUser.name}`);
                 this.render();
+            },
+            
+            updateAdminPanel() {
+                const adminSection = document.getElementById('adminSection');
+                const adminBadge = document.getElementById('adminBadge');
+                
+                if (this.currentSession && this.currentSession.user === CONFIG.ADMIN_USER) {
+                    adminSection.style.display = 'block';
+                    adminBadge.style.display = 'inline-block';
+                } else {
+                    adminSection.style.display = 'none';
+                    adminBadge.style.display = 'none';
+                }
             },
             
             startSessionTimer() {
@@ -471,32 +551,33 @@
             
             endSession() {
                 if (!this.currentSession) {
-                    this.showError('No active session');
+                    this.showError('Nenhuma sessão ativa');
                     return;
                 }
                 
                 if (this.sessionLogs.length === 0) {
-                    this.showError('No usage logged in this session');
+                    this.showError('Nenhum uso registrado nesta sessão');
                     return;
                 }
                 
-                const confirmed = confirm(`Export session for ${this.currentSession.user}?\n\nFile: ${this.currentSession.user.replace(/\s+/g, '_')}_${this.getFileDateTime()}.xml`);
+                const confirmed = confirm(`Exportar sessão para ${this.currentSession.user}?\n\nArquivo: ${this.currentSession.user.replace(/\s+/g, '_')}_${this.getFileDateTime()}.xml`);
                 if (!confirmed) return;
                 
-                // Export XML
+                // Exportar XML
                 this.exportSessionXML();
                 
-                // Clear session
+                // Limpar sessão
                 this.currentSession = null;
                 this.sessionLogs = [];
                 this.sessionStartTime = null;
-                document.getElementById('currentUser').textContent = 'Not selected';
+                document.getElementById('currentUser').textContent = 'Não selecionado';
                 document.getElementById('sessionStart').textContent = '--:--';
                 document.getElementById('sessionDuration').textContent = '00:00:00';
                 document.getElementById('user').value = '';
                 
+                this.updateAdminPanel();
                 this.saveToLocalStorage();
-                this.showSuccess('✓ Session ended and exported!');
+                this.showSuccess('✓ Sessão finalizada e exportada!');
                 this.render();
             },
             
@@ -506,12 +587,12 @@
                 const hours = document.getElementById('hours').value;
                 
                 if (!machineId || !userId || !hours) {
-                    this.showError('Please fill all fields');
+                    this.showError('Por favor, preencha todos os campos');
                     return;
                 }
                 
                 if (!this.currentSession) {
-                    this.showError('No active session. Please start a new session.');
+                    this.showError('Nenhuma sessão ativa. Por favor, inicie uma nova sessão.');
                     return;
                 }
                 
@@ -530,12 +611,12 @@
                 this.allLogs.push(log);
                 machine.total_hours += parseFloat(hours);
                 
-                // Check for maintenance alert (every 220 hours)
+                // Verificar alerta de manutenção (a cada 220 horas)
                 if (machine.total_hours >= 220) {
                     machine.maintenance_alert = true;
                 }
                 
-                this.showSuccess(`✓ Logged ${hours}h for ${machine.name}`);
+                this.showSuccess(`✓ Registrado ${hours}h para ${machine.name}`);
                 document.getElementById('hours').value = '';
                 document.getElementById('machine').value = '';
                 
@@ -543,8 +624,14 @@
                 this.render();
             },
             
-            async resetMaintenance(machineId) {
-                if (!confirm('Reset maintenance for this machine?')) return;
+            resetMaintenance(machineId) {
+                // Apenas Claudio Miranda pode resetar
+                if (!this.currentSession || this.currentSession.user !== CONFIG.ADMIN_USER) {
+                    this.showError('⛔ Apenas o administrador (Claudio Miranda) pode resetar alertas de manutenção');
+                    return;
+                }
+                
+                if (!confirm('Tem certeza que deseja resetar a manutenção desta máquina?')) return;
                 
                 const machine = this.machines.find(m => m.id == machineId);
                 if (machine) {
@@ -552,29 +639,49 @@
                     machine.total_hours = 0;
                     machine.last_maintenance = this.getCurrentDateTime();
                     this.saveToLocalStorage();
-                    this.showSuccess(`✓ Maintenance reset for ${machine.name}`);
+                    this.showSuccess(`✓ Manutenção resetada para ${machine.name}`);
                     this.render();
                 }
             },
             
+            resetAllMaintenance() {
+                // Apenas Claudio Miranda pode resetar
+                if (!this.currentSession || this.currentSession.user !== CONFIG.ADMIN_USER) {
+                    this.showError('⛔ Apenas o administrador (Claudio Miranda) pode resetar alertas de manutenção');
+                    return;
+                }
+                
+                if (!confirm('⚠️ Tem certeza que deseja resetar TODAS as manutenções? Esta ação não pode ser desfeita.')) return;
+                
+                this.machines.forEach(m => {
+                    m.maintenance_alert = false;
+                    m.total_hours = 0;
+                    m.last_maintenance = this.getCurrentDateTime();
+                });
+                
+                this.saveToLocalStorage();
+                this.showSuccess('✓ Todas as manutenções foram resetadas!');
+                this.render();
+            },
+            
             exportCSV() {
-                let csv = 'Machine,User,Hours,Timestamp\n';
+                let csv = 'Máquina,Usuário,Horas,Data e Hora\n';
                 
                 this.sessionLogs.forEach(log => {
                     csv += `"${log.machine}","${log.user}",${log.hours},"${log.timestamp}"\n`;
                 });
                 
-                csv += '\n\nMachine,Total Hours,Maintenance Alert\n';
+                csv += '\n\nMáquina,Total de Horas,Alerta de Manutenção\n';
                 this.machines.forEach(m => {
-                    csv += `"${m.name}",${m.total_hours},${m.maintenance_alert ? 'YES' : 'NO'}\n`;
+                    csv += `"${m.name}",${m.total_hours},${m.maintenance_alert ? 'SIM' : 'NÃO'}\n`;
                 });
                 
-                this.downloadFile(csv, 'text/csv', 'machine_usage.csv');
+                this.downloadFile(csv, 'text/csv', 'rastreador_uso.csv');
             },
             
             exportXML() {
                 const xmlContent = this.generateSessionXML();
-                this.downloadFile(xmlContent, 'application/xml', 'machine_usage.xml');
+                this.downloadFile(xmlContent, 'application/xml', 'rastreador_uso.xml');
             },
             
             exportSessionXML() {
@@ -587,37 +694,37 @@
             
             generateSessionXML() {
                 let xml = '<?xml version="1.0" encoding="UTF-8"?>\n';
-                xml += '<MachineUsageReport>\n';
-                xml += `  <Metadata>\n`;
-                xml += `    <Timestamp>${this.getCurrentDateTime()}</Timestamp>\n`;
+                xml += '<RelatorioUsoMaquinas>\n';
+                xml += `  <Metadados>\n`;
+                xml += `    <DataHora>${this.getCurrentDateTime()}</DataHora>\n`;
                 if (this.currentSession) {
-                    xml += `    <User>${this.escapeXml(this.currentSession.user)}</User>\n`;
-                    xml += `    <SessionStart>${this.currentSession.startTime.toLocaleString()}</SessionStart>\n`;
+                    xml += `    <Usuario>${this.escapeXml(this.currentSession.user)}</Usuario>\n`;
+                    xml += `    <InicioSessao>${this.currentSession.startTime.toLocaleString('pt-BR')}</InicioSessao>\n`;
                 }
-                xml += `  </Metadata>\n`;
+                xml += `  </Metadados>\n`;
                 
-                xml += '  <UsageLogs>\n';
+                xml += '  <RegistrosUso>\n';
                 (this.sessionLogs.length > 0 ? this.sessionLogs : this.allLogs).forEach(log => {
-                    xml += '    <Log>\n';
-                    xml += `      <Machine>${this.escapeXml(log.machine)}</Machine>\n`;
-                    xml += `      <User>${this.escapeXml(log.user)}</User>\n`;
-                    xml += `      <Hours>${log.hours}</Hours>\n`;
-                    xml += `      <Timestamp>${log.timestamp}</Timestamp>\n`;
-                    xml += '    </Log>\n';
+                    xml += '    <Registro>\n';
+                    xml += `      <Maquina>${this.escapeXml(log.machine)}</Maquina>\n`;
+                    xml += `      <Usuario>${this.escapeXml(log.user)}</Usuario>\n`;
+                    xml += `      <Horas>${log.hours}</Horas>\n`;
+                    xml += `      <DataHora>${log.timestamp}</DataHora>\n`;
+                    xml += '    </Registro>\n';
                 });
-                xml += '  </UsageLogs>\n';
+                xml += '  </RegistrosUso>\n';
                 
-                xml += '  <MachineSummary>\n';
+                xml += '  <ResumoMaquinas>\n';
                 this.machines.forEach(m => {
-                    xml += '    <Machine>\n';
-                    xml += `      <Name>${this.escapeXml(m.name)}</Name>\n`;
-                    xml += `      <TotalHours>${m.total_hours}</TotalHours>\n`;
-                    xml += `      <MaintenanceAlert>${m.maintenance_alert ? 'YES' : 'NO'}</MaintenanceAlert>\n`;
-                    xml += `      <LastMaintenance>${m.last_maintenance}</LastMaintenance>\n`;
-                    xml += '    </Machine>\n';
+                    xml += '    <Maquina>\n';
+                    xml += `      <Nome>${this.escapeXml(m.name)}</Nome>\n`;
+                    xml += `      <TotalHoras>${m.total_hours}</TotalHoras>\n`;
+                    xml += `      <AlertaManutencao>${m.maintenance_alert ? 'SIM' : 'NÃO'}</AlertaManutencao>\n`;
+                    xml += `      <UltimaManutencao>${m.last_maintenance}</UltimaManutencao>\n`;
+                    xml += '    </Maquina>\n';
                 });
-                xml += '  </MachineSummary>\n';
-                xml += '</MachineUsageReport>';
+                xml += '  </ResumoMaquinas>\n';
+                xml += '</RelatorioUsoMaquinas>';
                 
                 return xml;
             },
@@ -645,11 +752,17 @@
                 a.click();
                 window.URL.revokeObjectURL(url);
                 document.body.removeChild(a);
-                this.showSuccess(`✓ Downloaded: ${filename}`);
+                this.showSuccess(`✓ Arquivo baixado: ${filename}`);
             },
             
             clearAllData() {
-                if (!confirm('⚠️ This will clear ALL data. Are you sure?')) return;
+                // Apenas Claudio Miranda pode limpar dados
+                if (!this.currentSession || this.currentSession.user !== CONFIG.ADMIN_USER) {
+                    this.showError('⛔ Apenas o administrador (Claudio Miranda) pode limpar dados');
+                    return;
+                }
+                
+                if (!confirm('⚠️ Isto limpará TODOS os dados. Tem certeza?')) return;
                 
                 this.machines.forEach(m => {
                     m.total_hours = 0;
@@ -660,7 +773,7 @@
                 this.allLogs = [];
                 
                 this.saveToLocalStorage();
-                this.showSuccess('✓ All data cleared!');
+                this.showSuccess('✓ Todos os dados foram limpos!');
                 this.render();
             },
             
@@ -675,7 +788,7 @@
                 const machineSelect = document.getElementById('machine');
                 const userSelect = document.getElementById('user');
                 
-                machineSelect.innerHTML = '<option value="">Select Machine...</option>';
+                machineSelect.innerHTML = '<option value="">Selecione a Máquina...</option>';
                 this.machines.forEach(m => {
                     const option = document.createElement('option');
                     option.value = m.id;
@@ -683,7 +796,7 @@
                     machineSelect.appendChild(option);
                 });
                 
-                userSelect.innerHTML = '<option value="">Select User...</option>';
+                userSelect.innerHTML = '<option value="">Selecione o Usuário...</option>';
                 this.users.forEach(u => {
                     const option = document.createElement('option');
                     option.value = u.id;
@@ -706,7 +819,7 @@
                         <h3>${m.name}</h3>
                         <div class="value">${m.total_hours.toFixed(1)}h</div>
                         <div style="font-size: 0.9em; margin-top: 10px;">
-                            ${isAlert ? '⚠️ MAINTENANCE ALERT!' : `Next maintenance: ${nextMaintenance.toFixed(1)}h`}
+                            ${isAlert ? '⚠️ ALERTA DE MANUTENÇÃO!' : `Próxima manutenção: ${nextMaintenance.toFixed(1)}h`}
                         </div>
                     `;
                     container.appendChild(card);
@@ -720,15 +833,22 @@
                 this.machines.forEach(m => {
                     const row = tbody.insertRow();
                     const statusHTML = m.maintenance_alert 
-                        ? '<span class="alert-badge">⚠️ MAINTENANCE NEEDED</span>' 
+                        ? '<span class="alert-badge">⚠️ MANUTENÇÃO NECESSÁRIA</span>' 
                         : '<span class="no-alert">✓ OK</span>';
+                    
+                    let resetButton = '';
+                    if (this.currentSession && this.currentSession.user === CONFIG.ADMIN_USER) {
+                        resetButton = `<button class="secondary warning" onclick="app.resetMaintenance(${m.id})">🔄 Resetar</button>`;
+                    } else {
+                        resetButton = `<button class="secondary" onclick="app.resetMaintenance(${m.id})" disabled>🔄 Resetar</button>`;
+                    }
                     
                     row.innerHTML = `
                         <td><strong>${m.name}</strong></td>
                         <td>${m.total_hours.toFixed(1)}h</td>
                         <td>${statusHTML}</td>
                         <td>${m.last_maintenance}</td>
-                        <td><button class="secondary danger" onclick="app.resetMaintenance(${m.id})">Reset</button></td>
+                        <td>${resetButton}</td>
                     `;
                 });
             },
@@ -749,7 +869,7 @@
                 
                 if (this.sessionLogs.length === 0) {
                     const row = tbody.insertRow();
-                    row.innerHTML = '<td colspan="4" style="text-align: center; color: #999;">No logs yet - start logging usage</td>';
+                    row.innerHTML = '<td colspan="4" style="text-align: center; color: #999;">Nenhum registro ainda - comece a registrar uso</td>';
                 }
             },
             
@@ -818,7 +938,7 @@
             }
         };
         
-        // Initialize on page load
+        // Inicializar ao carregar a página
         document.addEventListener('DOMContentLoaded', () => app.init());
     </script>
 </body>
